@@ -41,21 +41,21 @@ class OnlineVariance(object):
 
 
 class Cluster(object):
-    def __init__(self, segment):
+    def __init__(self, segment, time):
         self.center = segment
         self.size = kernel_gauss(segment, segment)
-        self.timestampEnd = segment.name + 1
-        self.timestampStart = segment.name + 1
+        self.timestampEnd = time
+        self.timestampStart = time
         self.firstPoint = segment
         self.endPoint = segment
         self.num_points = 1
         self.STD = OnlineVariance(ddof=0)
         self.STD.std_calc(kernel_gauss(segment, segment))
 
-    def add(self, segment):
+    def add(self, segment, time):
         self.size += kernel_gauss(self.center, segment)
         self.center += (segment - self.center) / self.size
-        self.timestampEnd = segment.name + 1
+        self.timestampEnd = time
         self.endPoint = segment
         self.num_points += 1
         self.STD.std_calc(kernel_gauss(self.center, segment))
@@ -93,11 +93,11 @@ class OnlineCluster(object):
         # cache inter-cluster distances
         self.distanceClusters = []
 
-    def cluster(self, segment):
+    def cluster(self, segment, time):
         # if the cluster is older than memoryDelta, then remove it from the currentClusters and put it in the
         # allClusters list
         for clusterI in self.currentClusters:
-            if (segment.name + 1) - clusterI.timestampEnd >= memoryDelta:
+            if (time + 1) - clusterI.timestampEnd >= memoryDelta:
                 self.currentClusters.remove(clusterI)
                 self.removeDistance(clusterI)
                 self.allClusters.append(clusterI)
@@ -106,7 +106,7 @@ class OnlineCluster(object):
         if len(self.currentClusters) > 0:
             closestArray = [(i, kernel_gauss(c.center, segment)) for i, c in enumerate(self.currentClusters)]
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
-            closest.add(segment)
+            closest.add(segment, time)
 
             if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 20):
                 print("What did you do the last minute?:")
@@ -121,10 +121,11 @@ class OnlineCluster(object):
             self.updateDistance(m.x)
 
         # make a new cluster for this point
-        newCluster = Cluster(segment)
+        newCluster = Cluster(segment, time)
         self.currentClusters.append(newCluster)
         self.updateDistance(newCluster)
         self.n += 1
+
 
     def removeDistance(self, c):
         """invalidate intercluster distance cache for c"""
