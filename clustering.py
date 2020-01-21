@@ -4,9 +4,8 @@ import operator
 
 import numpy as np
 import scipy
-import askUser
 
-memoryDelta = 20
+memoryDelta = 2629800  # cluster sollen nach einem Monat Inaktivität gelöscht werden
 
 
 def kernel_gauss(a, b, sigma=0.1):
@@ -94,8 +93,8 @@ class OnlineCluster(object):
         self.distanceClusters = []
 
     def cluster(self, segment, time):
-        # if the cluster is older than memoryDelta, then remove it from the currentClusters and put it in the
-        # allClusters list
+
+        # delete old cluster (depends on memoryDelta)
         for clusterI in self.currentClusters:
             if (time + 1) - clusterI.timestampEnd >= memoryDelta:
                 self.currentClusters.remove(clusterI)
@@ -105,14 +104,21 @@ class OnlineCluster(object):
         # find the closest cluster
         if len(self.currentClusters) > 0:
             closestArray = [(i, kernel_gauss(c.center, segment)) for i, c in enumerate(self.currentClusters)]
+            print("This is the closestArray")
+            print(closestArray)
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
             closest.add(segment, time)
 
-            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 20):
-                print("What did you do the last minute?:")
-                askUser.ask()
-                print("NOTHING")
+            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 5):
+                print("This is the current segment")
+                print(np.array(segment))
+                print("This is the closest cluster")
+                print(closest.center)
+                print("This is the max value")
+                print(max(closestArray, key=operator.itemgetter(1))[1])
+                return True
 
+        # delete one cluster when there are to many
         if len(self.currentClusters) > self.N:
             m = heapq.heappop(self.distanceClusters)
             self.currentClusters.remove(m.y)
@@ -120,12 +126,11 @@ class OnlineCluster(object):
             m.x.merge(m.y)
             self.updateDistance(m.x)
 
-        # make a new cluster for this point
+        # make a new cluster for the current segment
         newCluster = Cluster(segment, time)
         self.currentClusters.append(newCluster)
         self.updateDistance(newCluster)
         self.n += 1
-
 
     def removeDistance(self, c):
         """invalidate intercluster distance cache for c"""
@@ -147,5 +152,3 @@ class OnlineCluster(object):
             d = kernel_gauss(x.center, c.center)
             t = Distance(x, c, d)
             heapq.heappush(self.distanceClusters, t)
-
-        # search for closest cluster

@@ -5,7 +5,7 @@ import pandas as pd
 import clustering
 
 app = Flask(__name__)
-cluster = clustering.OnlineCluster(5)
+cluster = clustering.OnlineCluster(7)
 CORS(app)
 
 
@@ -24,15 +24,18 @@ def start():
 def discovery():
     if request.method == "POST":
         data = request.get_json(force=True)
-        data = pd.Series(data)
 
+        label = data['label']
+        data = pd.Series(data['feature'])
         time = data.iloc[-1]
         data = data[:-1]
 
-        cluster.cluster(data, time)
+        answer = cluster.cluster(data, time)
 
-        # print(data)
-        return jsonify({'text': 'Works'})
+        if answer:
+            return jsonify({'text': label})
+        else:
+            return jsonify({'text': 'No newly founded activity!'})
 
 
 if __name__ == "__main__":
