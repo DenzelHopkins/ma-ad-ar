@@ -5,6 +5,8 @@ import operator
 import numpy as np
 import scipy
 
+import dbAPI
+
 memoryDelta = 2629800  # cluster sollen nach einem Monat Inaktivität gelöscht werden
 
 
@@ -109,7 +111,7 @@ class OnlineCluster(object):
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
             closest.add(segment, time)
 
-            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 5):
+            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 10):
                 print("This is the current segment")
                 print(np.array(segment))
                 print("This is the closest cluster")

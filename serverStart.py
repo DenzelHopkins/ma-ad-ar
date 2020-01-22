@@ -3,6 +3,7 @@ from flask_cors import CORS
 
 import pandas as pd
 import clustering
+import dbAPI
 
 app = Flask(__name__)
 cluster = clustering.OnlineCluster(7)
@@ -30,13 +31,27 @@ def discovery():
         time = data.iloc[-1]
         data = data[:-1]
 
-        answer = cluster.cluster(data, time)
+        # activity discovery
+        answer_ad = cluster.cluster(data, time)
 
-        if answer:
+        # activity recognition
+
+        if answer_ad:
+
+            print(data)
+            print(type(data))
+            print(time)
+            print(type(time))
+            print(label)
+            print(type(label))
+
+            dbAPI.write(data.to_json(orient='records'), time, label)
             return jsonify({'text': label})
         else:
             return jsonify({'text': 'No newly founded activity!'})
 
 
 if __name__ == "__main__":
+    dbAPI.clear()
+    print("Database is clear!")
     app.run()
