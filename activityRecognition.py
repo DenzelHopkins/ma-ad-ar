@@ -1,76 +1,75 @@
-import null as null
 from sklearn import svm
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import confusion_matrix
 
 import numpy as np
 import dbAPI
 
-data = dbAPI.get(862)
 
-# label = {
-#     "Meal_Preparation": 1,
-#     "Relax": 2,
-#     "Eating": 3,
-#     "Work": 4,
-#     "Sleeping": 5,
-#     "Wash_Dishes": 6,
-#     "Bed_to_Toilet": 7,
-#     "Enter_Home": 8,
-#     "Leave_Home": 9,
-#     "Housekeeping": 10,
-#     "Resperate": 11
-# }
+class SVM(object):
+    def __init__(self):
+        self.labels = ["Meal_Preparation",
+                       "Relax",
+                       "Eating",
+                       "Work",
+                       "Sleeping",
+                       "Wash_Dishes",
+                       "Bed_to_Toilet",
+                       "Enter_Home",
+                       "Leave_Home",
+                       "Housekeeping",
+                       "Resperate"]
+        self.X = []
+        self.y = []
+        self.segment = []
 
-# for vector in data:
+        self.X_train = []
+        self.X_test = []
+        self.y_train = []
+        self.y_test = []
 
-label = ["Meal_Preparation",
-         "Relax",
-         "Eating",
-         "Work",
-         "Sleeping",
-         "Wash_Dishes",
-         "Bed_to_Toilet",
-         "Enter_Home",
-         "Leave_Home",
-         "Housekeeping",
-         "Resperate"]
+        self.model = None
 
-X = []  # samples
-y = []  # labels
+    def predict(self, segment):
 
-i = 0
+        point = []
+        for n in segment:
+            point.append(float(n))
+        point = [np.array(point)]
 
-for point in data:
-    print(point['segment'])
-    print(point['label'])
-    print(point['time'])
+        label = self.model.predict(point)
+        score = self.model.predict_proba(point).max()
+        return label, score
 
-    segment = []
+    def train(self):
+        data = dbAPI.get(20)
+        self.X = []
+        self.y = []
 
-    for n in point['segment'].strip("[]").split(','):
-        segment.append(float(n))
-    segment = np.array(segment)
+        if data.size > 100:
+            for point in data:
+                self.segment = []
 
-    print(segment.size)
+                for n in point['segment'].strip("[]").split(','):
+                    self.segment.append(float(n))
+                self.segment = np.array(self.segment)
 
-    X.append(segment)
-    # y.append(label.get((point['label'])))
-    y.append(point['label'])
-X = np.vstack(X)
+                self.X.append(self.segment)
+                self.y.append(point['label'])
 
-print(X)
+            self.X = np.vstack(self.X)
 
-print(y)
+            self.X_train, self.X_test, self.y_train, self.y_test = \
+                train_test_split(self.X, self.y, random_state=0)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+            self.model = svm.SVC(kernel='poly', probability=True).fit(self.X_train, self.y_train)
+        else:
+            return
 
-svm_model_linear = svm.SVC(kernel='linear').fit(X_train, y_train)
-svm_predictions = svm_model_linear.predict(X_test)
-
-accuracy = svm_model_linear.score(X_test, y_test)
-cm = confusion_matrix(y_test, svm_predictions, labels=label)
-
-print(accuracy)
-print(label)
-print(cm)
+    def solutions(self):
+        svm_predictions = self.model.predict(self.X_test)
+        accuracy = self.model.score(self.X_test, self.y_test)
+        cm = confusion_matrix(self.y_test, svm_predictions, labels=self.label)
+        # print(accuracy)
+        # print(self.label)
+        # print(cm)
