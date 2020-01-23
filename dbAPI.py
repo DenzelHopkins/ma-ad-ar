@@ -18,9 +18,10 @@ labels = ["Meal_Preparation",
          "Housekeeping",
          "Resperate"]
 
+client = MongoClient("mongodb://127.0.0.1:27017")
+
 
 def write(data, time, label):
-    client = MongoClient("mongodb://127.0.0.1:27017")
 
     point = {"segment": data,
              "time": time,
@@ -32,8 +33,6 @@ def write(data, time, label):
 
 
 def clear():
-    client = MongoClient("mongodb://127.0.0.1:27017")
-
     for l in labels:
         path = client.daten[l]
         path.drop()
@@ -42,8 +41,6 @@ def clear():
 
 
 def get(amount):
-    client = MongoClient("mongodb://127.0.0.1:27017")
-
     data = []
 
     for l in labels:
