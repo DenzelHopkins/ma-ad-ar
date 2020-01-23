@@ -7,22 +7,21 @@ from sklearn.utils import shuffle
 from pymongo import MongoClient
 
 labels = ["Meal_Preparation",
-         "Relax",
-         "Eating",
-         "Work",
-         "Sleeping",
-         "Wash_Dishes",
-         "Bed_to_Toilet",
-         "Enter_Home",
-         "Leave_Home",
-         "Housekeeping",
-         "Resperate"]
+          "Relax",
+          "Eating",
+          "Work",
+          "Sleeping",
+          "Wash_Dishes",
+          "Bed_to_Toilet",
+          "Enter_Home",
+          "Leave_Home",
+          "Housekeeping",
+          "Resperate"]
 
 client = MongoClient("mongodb://127.0.0.1:27017")
 
 
 def write(data, time, label):
-
     point = {"segment": data,
              "time": time,
              "label": label}

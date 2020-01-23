@@ -12,17 +12,6 @@ svm = activityRecognition.SVM()
 CORS(app)
 
 
-@app.route("/")
-def home():
-    return "Hello World"
-
-
-@app.route("/start", methods=["GET"])
-def start():
-    if request.method == "GET":
-        return jsonify({'text': 'DataLoadWorks'})
-
-
 @app.route("/discovery", methods=["POST"])
 def discovery():
     if request.method == "POST":
@@ -45,7 +34,6 @@ def discovery():
             pred_score = answer_ar_s
 
             if pred_score > 0.7:
-
                 print("The Label is " + label)
                 print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
 
@@ -60,8 +48,6 @@ def discovery():
 
 
 if __name__ == "__main__":
-
     # dbAPI.clear()
     # print("Database is clear!")
-
     app.run()
