@@ -46,7 +46,7 @@ class SVM(object):
         self.X = []
         self.y = []
 
-        if data.size > 100:
+        if data.size > 50:
             for point in data:
                 self.segment = []
 

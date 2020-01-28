@@ -104,18 +104,10 @@ class OnlineCluster(object):
         # find the closest cluster
         if len(self.currentClusters) > 0:
             closestArray = [(i, kernel_gauss(c.center, segment)) for i, c in enumerate(self.currentClusters)]
-            # print("This is the closestArray")
-            # print(closestArray)
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
             closest.add(segment, time)
 
-            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 20):
-                # print("This is the current segment")
-                # print(np.array(segment))
-                # print("This is the closest cluster")
-                # print(closest.center)
-                # print("This is the max value")
-                # print(max(closestArray, key=operator.itemgetter(1))[1])
+            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 5):
                 return True
 
         # delete one cluster when there are to many

@@ -33,21 +33,22 @@ def discovery():
             pred_label = answer_ar_l[0]
             pred_score = answer_ar_s
 
-            if pred_score > 0.7:
-                print("The Label is " + label)
-                print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
+            print("----------------------")
+            print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
+            print("The Label is " + label)
+
 
         # when new cluster is found
         if answer_ad:
-            dbAPI.write(data.to_json(orient='records'), time, label)
+            dbAPI.write(data.to_json(orient='records'), time, label) #letztes segment setzt label für gesamte cluster
             svm.train()
-            # wieiviel cases gibt es? ausarbeiten!
+            # wieiviele if cases gibt es? ausarbeiten!
             return jsonify({'text': label})
         else:
             return jsonify({'text': 'No newly founded activity!'})
 
 
 if __name__ == "__main__":
-    # dbAPI.clear()
-    # print("Database is clear!")
+    dbAPI.clear()
+    print("Database is clear!")
     app.run()
