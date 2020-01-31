@@ -1,5 +1,3 @@
-import pprint
-
 import numpy as np
 import pymongo
 
@@ -16,7 +14,7 @@ labels = ["Meal_Preparation",
           "Enter_Home",
           "Leave_Home",
           "Housekeeping",
-          "Resperate"]
+          "Respirate"]
 
 client = MongoClient("mongodb://127.0.0.1:27017")
 
