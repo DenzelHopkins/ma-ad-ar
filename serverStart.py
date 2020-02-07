@@ -8,13 +8,17 @@ import dbAPI
 import solutions
 
 app = Flask(__name__)
-cluster = activityDiscovery.OnlineCluster(20)
+cluster = activityDiscovery.OnlineCluster(11)
 svm = activityRecognition.SVM()
 CORS(app)
 
 set_start_time = False
 start_time = 0
-trainings_duration = 2628000000
+
+# 1 week
+trainings_duration = 604800000
+# 1 month
+#trainings_duration = 2628000000
 
 
 @app.route("/solution", methods=["GET"])
@@ -24,13 +28,6 @@ def solution():
         founded_activities, accuracy = solutions.get_solutions()
         return jsonify({'founded_activities': founded_activities, 'accuracy': accuracy})
 
-
-# @app.route("/start_time", methods=["POST"])
-# def start_time():
-#     if request.method == "POST":
-#         data = request.get_json(force=True)
-#         global start_time
-#         start_time = data['time']
 
 @app.route("/discovery", methods=["POST"])
 def discovery():
