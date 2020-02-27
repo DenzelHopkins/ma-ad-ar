@@ -41,7 +41,7 @@ class SVM(object):
         return label, score
 
     def train(self):
-        data = dbAPI.get(25)
+        data = dbAPI.get(100)
         self.X = []
         self.y = []
 
@@ -60,4 +60,4 @@ class SVM(object):
         self.X_train, self.X_test, self.y_train, self.y_test = \
             train_test_split(self.X, self.y, random_state=0)
 
-        self.model = svm.SVC(kernel='poly', probability=True).fit(self.X_train, self.y_train)
+        self.model = svm.SVC(kernel='poly', probability=True).fit(self.X, self.y)
