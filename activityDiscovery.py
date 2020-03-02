@@ -5,7 +5,7 @@ import operator
 import numpy as np
 import scipy
 
-memoryDelta = 2628000000  # cluster sollen nach einem Monat Inaktivität gelöscht werden (in Millisekunden)
+memoryDelta = 604800000  # cluster sollen nach einer Woche Inaktivität gelöscht werden (in Millisekunden)
 
 
 def kernel_gauss(a, b, sigma=0.1):
@@ -107,11 +107,11 @@ class OnlineCluster(object):
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
             closest.add(segment, time)
 
-            if closest.num_points > 5:
+            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.6 and (closest.num_points > 10):
                 self.currentClusters.remove(closest)
                 self.removeDistance(closest)
                 self.allClusters.append(closest)
-                return True
+                return closest.center
 
         # delete one cluster when there are to many
         if len(self.currentClusters) > self.N:

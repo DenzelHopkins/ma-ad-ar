@@ -17,6 +17,7 @@ start_time = 0
 
 # 1 week
 trainings_duration = 604800000
+
 # 1 month
 #trainings_duration = 2628000000
 
@@ -49,10 +50,8 @@ def discovery():
 
         # activity discovery (return true/false)
         answer_ad = cluster.cluster(data, time)
-        if answer_ad:
-            dbAPI.write(data.to_json(orient='records'), time, label)
-            print(trainings_duration)
-            print(diff)
+        if answer_ad is not None:
+            dbAPI.write(answer_ad.to_json(orient='records'), time, label)
             if diff > trainings_duration:
                 svm.train()
                 solutions.add_founded_activities(label)
