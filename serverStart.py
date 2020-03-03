@@ -12,16 +12,6 @@ cluster = activityDiscovery.OnlineCluster(11)
 svm = activityRecognition.SVM()
 CORS(app)
 
-set_start_time = False
-start_time = 0
-
-# 1 week
-trainings_duration = 604800000
-
-# 1 month
-#trainings_duration = 2628000000
-
-
 @app.route("/solution", methods=["GET"])
 def solution():
     if request.method == "GET":
@@ -34,31 +24,32 @@ def solution():
 def discovery():
     if request.method == "POST":
         data = request.get_json(force=True)
-
         label = data['label']
+        training = data['training']
+        manuellSegmentation = data['manuellSegmentation']
         data = pd.Series(data['feature'])
         time = data.iloc[-1]
         data = data[:-1]
 
-        # check if trainingstime passed or not
-        global set_start_time
-        global start_time
-        if set_start_time is not True:
-            start_time = time
-            set_start_time = True
-        diff = time - start_time
-
-        # activity discovery (return true/false)
-        answer_ad = cluster.cluster(data, time)
-        if answer_ad is not None:
-            dbAPI.write(answer_ad.to_json(orient='records'), time, label)
-            if diff > trainings_duration:
-                svm.train()
+        # activity discovery
+        if manuellSegmentation:
+            if training:
+                dbAPI.write(data.to_json(orient='records'), time, label)
+            if not training:
+                if svm.model is None:
+                    svm.train()
+        else:
+            answer_ad = cluster.cluster(data, time)
+            if answer_ad is not None:
+                dbAPI.write(answer_ad.to_json(orient='records'), time, label)
+                if not training:
+                    svm.train()
                 solutions.add_founded_activities(label)
-            return jsonify({'answer': "Founded new activity!"})
+                return jsonify({'answer': "Founded new activity!"})
 
         # activity recognition
-        elif svm.model is not None:
+        if svm.model is not None:
+            print(data)
             answer_ar_l, answer_ar_s = svm.predict(data)
             pred_label = answer_ar_l[0]
             pred_score = answer_ar_s
@@ -70,7 +61,6 @@ def discovery():
 
         else:
             return jsonify({'answer': "Nothing!"})
-
 
 if __name__ == "__main__":
     dbAPI.clear()
