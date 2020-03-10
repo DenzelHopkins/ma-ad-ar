@@ -12,6 +12,7 @@ cluster = activityDiscovery.OnlineCluster(11)
 svm = activityRecognition.SVM()
 CORS(app)
 
+
 @app.route("/solution", methods=["GET"])
 def solution():
     if request.method == "GET":
@@ -61,6 +62,7 @@ def discovery():
 
         else:
             return jsonify({'answer': "Nothing!"})
+
 
 if __name__ == "__main__":
     dbAPI.clear()
