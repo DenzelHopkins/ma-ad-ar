@@ -1,5 +1,4 @@
 from sklearn import svm
-from sklearn.model_selection import train_test_split
 
 import numpy as np
 import dbAPI
@@ -17,7 +16,8 @@ class SVM(object):
                        "Enter_Home",
                        "Leave_Home",
                        "Housekeeping",
-                       "Resperate"]
+                       "Resperate",
+                       "Other"]
         self.X = []
         self.y = []
         self.segment = []
@@ -56,8 +56,5 @@ class SVM(object):
             self.y.append(point['label'])
 
         self.X = np.vstack(self.X)
-
-        self.X_train, self.X_test, self.y_train, self.y_test = \
-            train_test_split(self.X, self.y, random_state=0)
 
         self.model = svm.SVC(kernel='poly', probability=True).fit(self.X, self.y)

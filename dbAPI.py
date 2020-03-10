@@ -14,7 +14,8 @@ labels = ["Meal_Preparation",
           "Enter_Home",
           "Leave_Home",
           "Housekeeping",
-          "Respirate"]
+          "Respirate",
+          "Other"]
 
 client = MongoClient("mongodb://127.0.0.1:27017")
 

@@ -10,7 +10,8 @@ founded_activities = {"Meal_Preparation": 0,
                       "Enter_Home": 0,
                       "Leave_Home": 0,
                       "Housekeeping": 0,
-                      "Respirate": 0}
+                      "Respirate": 0,
+                      "Other": 0}
 
 labels = ["Meal_Preparation",
           "Relax",
@@ -22,7 +23,8 @@ labels = ["Meal_Preparation",
           "Enter_Home",
           "Leave_Home",
           "Housekeeping",
-          "Respirate"]
+          "Respirate",
+          "Other"]
 
 predicted_correct = 0
 predicted_count = 0
