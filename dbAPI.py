@@ -1,8 +1,7 @@
 import numpy as np
 import pymongo
-
-from sklearn.utils import shuffle
 from pymongo import MongoClient
+from sklearn.utils import shuffle
 
 labels = ["Meal_Preparation",
           "Relax",

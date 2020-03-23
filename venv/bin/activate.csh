@@ -8,11 +8,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-<<<<<<< HEAD
-setenv VIRTUAL_ENV "/home/leo/Nextcloud/ImplementierungMA/pythonServer/venv"
-=======
 setenv VIRTUAL_ENV "/home/leo/Schreibtisch/ma-ad-ar/venv"
->>>>>>> 08cf566694c2c63d615f5d40137fa82e6bddcc6f
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/bin:$PATH"

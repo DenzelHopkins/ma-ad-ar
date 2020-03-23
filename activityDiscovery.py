@@ -1,9 +1,7 @@
 import heapq
 import math
-import operator
-
 import numpy as np
-import scipy
+import operator
 
 memoryDelta = 604800000  # cluster sollen nach einer Woche Inaktivität gelöscht werden (in Millisekunden)
 

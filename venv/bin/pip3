@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-#!/home/leo/Nextcloud/ImplementierungMA/pythonServer/venv/bin/python
-=======
 #!/home/leo/Schreibtisch/ma-ad-ar/venv/bin/python
->>>>>>> 08cf566694c2c63d615f5d40137fa82e6bddcc6f
 # EASY-INSTALL-ENTRY-SCRIPT: 'pip==19.0.3','console_scripts','pip3'
 __requires__ = 'pip==19.0.3'
 import re

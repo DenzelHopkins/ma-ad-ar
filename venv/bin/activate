@@ -37,11 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-<<<<<<< HEAD
-VIRTUAL_ENV="/home/leo/Nextcloud/ImplementierungMA/pythonServer/venv"
-=======
 VIRTUAL_ENV="/home/leo/Schreibtisch/ma-ad-ar/venv"
->>>>>>> 08cf566694c2c63d615f5d40137fa82e6bddcc6f
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
