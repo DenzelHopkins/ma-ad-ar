@@ -103,9 +103,11 @@ class OnlineCluster(object):
         if len(self.currentClusters) > 0:
             closestArray = [(i, kernel_gauss(c.center, segment)) for i, c in enumerate(self.currentClusters)]
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
-            closest.add(segment, time)
 
-            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 3):
+            if max(closestArray, key=operator.itemgetter(1))[1] > 0.75:
+                closest.add(segment, time)
+
+            if closest.num_points > 3:
                 self.currentClusters.remove(closest)
                 self.removeDistance(closest)
                 self.allClusters.append(closest)

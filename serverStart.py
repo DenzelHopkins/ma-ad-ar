@@ -27,7 +27,7 @@ def discovery():
         data = request.get_json(force=True)
         label = data['label']
         training = data['training']
-        manuelSegmentation = data['manuelSegmentation']
+        manuelSegmentation = data['manuellSegmentation']
         data = pd.Series(data['feature'])
         time = data.iloc[-1]
         data = data[:-1]

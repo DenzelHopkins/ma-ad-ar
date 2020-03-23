@@ -41,7 +41,7 @@ class SVM(object):
         return label, score
 
     def train(self):
-        data = dbAPI.get(30)
+        data = dbAPI.get(5)
 
         self.X = []
         self.y = []
