@@ -43,7 +43,8 @@ def get(amount):
 
     for l in labels:
         path = client.daten[l]
-        for document in path.find(limit=amount).sort("time", pymongo.DESCENDING):
+        for document in path.find({}).sort("time", pymongo.DESCENDING):
+        #for document in path.find(limit=amount).sort("time", pymongo.DESCENDING):
             data.append(document)
 
     client.close()

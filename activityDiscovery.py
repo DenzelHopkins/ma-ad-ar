@@ -107,7 +107,7 @@ class OnlineCluster(object):
             closest = self.currentClusters[max(closestArray, key=operator.itemgetter(1))[0]]
             closest.add(segment, time)
 
-            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.6 and (closest.num_points > 5):
+            if (max(closestArray, key=operator.itemgetter(1))[1]) > 0.8 and (closest.num_points > 3):
                 self.currentClusters.remove(closest)
                 self.removeDistance(closest)
                 self.allClusters.append(closest)
