@@ -29,7 +29,11 @@ end
 # unset irrelevant variables
 deactivate nondestructive
 
+<<<<<<< HEAD
 set -gx VIRTUAL_ENV "/home/leo/Nextcloud/ImplementierungMA/pythonServer/venv"
+=======
+set -gx VIRTUAL_ENV "/home/leo/Schreibtisch/ma-ad-ar/venv"
+>>>>>>> 08cf566694c2c63d615f5d40137fa82e6bddcc6f
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
