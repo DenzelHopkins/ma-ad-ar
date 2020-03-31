@@ -3,6 +3,8 @@ import math
 import numpy as np
 import operator
 
+import scipy
+
 memoryDelta = 604800000  # cluster sollen nach einer Woche Inaktivität gelöscht werden (in Millisekunden)
 
 
@@ -106,12 +108,11 @@ class OnlineCluster(object):
 
             if max(closestArray, key=operator.itemgetter(1))[1] > 0.75:
                 closest.add(segment, time)
-
-            if closest.num_points > 3:
-                self.currentClusters.remove(closest)
-                self.removeDistance(closest)
-                self.allClusters.append(closest)
-                return closest.center
+                if closest.num_points > 3:
+                    self.currentClusters.remove(closest)
+                    self.removeDistance(closest)
+                    self.allClusters.append(closest)
+                    return closest.center
 
         # delete one cluster when there are to many
         if len(self.currentClusters) > self.N:

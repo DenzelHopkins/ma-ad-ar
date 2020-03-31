@@ -1,3 +1,4 @@
+from imblearn.over_sampling import SMOTE
 import numpy as np
 from sklearn import svm
 
@@ -22,10 +23,8 @@ class SVM(object):
         self.y = []
         self.segment = []
 
-        self.X_train = []
-        self.X_test = []
-        self.y_train = []
-        self.y_test = []
+        self.X_res = []
+        self.y_res = []
 
         self.model = None
 
@@ -41,7 +40,7 @@ class SVM(object):
         return label, score
 
     def train(self):
-        data = dbAPI.get(5)
+        data = dbAPI.get(100000000)
 
         self.X = []
         self.y = []
@@ -58,4 +57,7 @@ class SVM(object):
 
         self.X = np.vstack(self.X)
 
-        self.model = svm.SVC(kernel='poly', probability=True).fit(self.X, self.y)
+        # sm = SMOTE(random_state=42)
+        # self.X_res, self.y_res = sm.fit_resample(self.X, self.y)
+
+        self.model = svm.SVC(kernel='rbf', probability=True).fit(self.X, self.y)
