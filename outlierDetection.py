@@ -43,7 +43,7 @@ class OneSVM(object):
 
         self.X = np.vstack(self.X)
 
-        self.model = OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1).fit(self.X)
+        self.model = OneClassSVM(gamma=0.00001).fit(self.X)
 
     def activities(self):
         return self.unknown, self.known
