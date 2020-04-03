@@ -40,88 +40,73 @@ def discovery():
         time = data.iloc[-1]
         data = data[:-1]
 
-        #outlier detection
-        if oneClassSVM.model is not None:
-            known = oneClassSVM.predict(data)
+        # no activity discovery
+        if not useActivityDiscovery:
+            if training:
+                print("Writing segmented activity to database")
+                dbAPI.write(data.to_json(orient='records'), time, label)
+            if not training:
+                if svm.model is None:
+                    print("Training Classification Model!")
+                    svm.train()
+                # activity recognition
+                if svm.model is not None:
+                    answer_ar_l, answer_ar_s = svm.predict(data)
+                    pred_label = answer_ar_l[0]
+                    pred_score = answer_ar_s
+                    solutions.add_pred_activities(pred_label, label)
+                    print("----------------------")
+                    print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
+                    print("The Label is " + label)
+                else:
+                    return jsonify({'answer': "Nothing!"})
 
+        # with activity discovery
         else:
-            dbAPI.write(data.to_json(orient='records'), time, label)
-
-
-
-
-
-        # # no activity discovery
-        # if not useActivityDiscovery:
-        #     if training:
-        #         print("Writing segmented activity to database")
-        #         dbAPI.write(data.to_json(orient='records'), time, label)
-        #     if not training:
-        #         if svm.model is None:
-        #             print("Training Classification Model!")
-        #             svm.train()
-        #         # activity recognition
-        #         if svm.model is not None:
-        #             answer_ar_l, answer_ar_s = svm.predict(data)
-        #             pred_label = answer_ar_l[0]
-        #             pred_score = answer_ar_s
-        #             solutions.add_pred_activities(pred_label, label)
-        #             print("----------------------")
-        #             print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
-        #             print("The Label is " + label)
-        #             return jsonify({'answer': "Predicted activity!"})
-        #
-        #         else:
-        #             return jsonify({'answer': "Nothing!"})
-        #
-        # # activity discovery
-        # else:
-        #     # outlier detection
-        #     if oneClassSVM.model is not None:
-        #         known = oneClassSVM.predict(data)
-        #         if known[0] == -1:
-        #             # clustering
-        #             print("Datapoint is unknown, doing Online Clustering!")
-        #             answer_ad = cluster.cluster(data, time)
-        #             if answer_ad is not None:
-        #                 print("Writing founded activity " + label + ", writing to the database!")
-        #                 dbAPI.write(answer_ad.to_json(orient='records'), time, label)
-        #                 solutions.add_founded_activities(label)
-        #                 print("Training OutlierDetection model!")
-        #                 oneClassSVM.train()
-        #                 if not training:
-        #                     print("Training Classification model!")
-        #                     svm.train()
-        #                 return jsonify({'answer': "Founded new activity!"})
-        #         else:
-        #             print("Datapoint is known, try to doing Classification!")
-        #             # activity recognition
-        #             if svm.model is not None:
-        #                 answer_ar_l, answer_ar_s = svm.predict(data)
-        #                 pred_label = answer_ar_l[0]
-        #                 pred_score = answer_ar_s
-        #                 solutions.add_pred_activities(pred_label, label)
-        #                 print("----------------------")
-        #                 print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
-        #                 print("The Label is " + label)
-        #                 return jsonify({'answer': "Predicted activity!"})
-        #
-        #             else:
-        #                 return jsonify({'answer': "Nothing!"})
-        #     else:
-        #         # clustering if no outlier detection model
-        #         print("No outlier detection model, doing Online Clustering!")
-        #         answer_ad = cluster.cluster(data, time)
-        #         if answer_ad is not None:
-        #             print("Writing founded activity to database!")
-        #             dbAPI.write(answer_ad.to_json(orient='records'), time, label)
-        #             solutions.add_founded_activities(label)
-        #             print("Training OutlierDetection model!")
-        #             oneClassSVM.train()
-        #             if not training:
-        #                 print("Training Classification model!")
-        #                 svm.train()
-        #             return jsonify({'answer': "Founded new activity!"})
+            # outlier detection
+            if oneClassSVM.model is not None:
+                known = oneClassSVM.predict(data)
+                if known[0] == -1:
+                    # clustering
+                    print("DataPoint is unknown, doing Online Clustering!")
+                    answer_ad = cluster.cluster(data, time)
+                    if answer_ad is not None:
+                        print("Writing founded activity " + label
+                              + " to the database and update Outlier Detection model!")
+                        dbAPI.write(answer_ad.to_json(orient='records'), time, label)
+                        solutions.add_founded_activities(label)
+                        oneClassSVM.train()
+                        if not training:
+                            print("Update Classification model!")
+                            svm.train()
+                else:
+                    print("DataPoint is known, doing Online Clustering!")
+            else:
+                # clustering if no outlier detection model
+                print("No outlier detection model, doing Online Clustering!")
+                answer_ad = cluster.cluster(data, time)
+                if answer_ad is not None:
+                    print("Writing founded activity to database!")
+                    dbAPI.write(answer_ad.to_json(orient='records'), time, label)
+                    solutions.add_founded_activities(label)
+                    print("Training OutlierDetection model!")
+                    oneClassSVM.train()
+                    if not training:
+                        print("Update Classification model!")
+                        svm.train()
+            # activity recognition
+            if svm.model is None and not training:
+                print("Training Classification model for first time!")
+                svm.train()
+            if svm.model is not None:
+                print("Trying to do Classification!")
+                answer_ar_l, answer_ar_s = svm.predict(data)
+                pred_label = answer_ar_l[0]
+                pred_score = answer_ar_s
+                solutions.add_pred_activities(pred_label, label)
+                print("----------------------")
+                print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
+                print("The Label is " + label)
 
         return jsonify({'answer': "Nothing!"})
 

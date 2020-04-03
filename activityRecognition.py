@@ -57,7 +57,4 @@ class SVM(object):
 
         self.X = np.vstack(self.X)
 
-        # sm = SMOTE(random_state=42)
-        # self.X_res, self.y_res = sm.fit_resample(self.X, self.y)
-
         self.model = svm.SVC(kernel='rbf', probability=True).fit(self.X, self.y)
