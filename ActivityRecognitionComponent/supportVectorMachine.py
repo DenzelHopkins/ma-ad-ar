@@ -1,9 +1,5 @@
-from imblearn.over_sampling import SMOTE
 import numpy as np
 from sklearn import svm
-
-import dbAPI
-
 
 class SVM(object):
     def __init__(self):
@@ -29,32 +25,29 @@ class SVM(object):
         self.model = None
 
     def predict(self, segment):
-
         point = []
         for n in segment:
             point.append(float(n))
         point = [np.array(point)]
-
         label = self.model.predict(point)
-        score = self.model.predict_proba(point).max()
-        return label, score
+        return label[0]
 
-    def train(self):
-        data = dbAPI.get(100000000)
+    def train(self, database):
+        data = database.get()
+        if data.size > 1:
+            self.X = []
+            self.y = []
 
-        self.X = []
-        self.y = []
+            for point in data:
+                self.segment = []
 
-        for point in data:
-            self.segment = []
+                for n in point['segment'].strip("[]").split(','):
+                    self.segment.append(float(n))
+                self.segment = np.array(self.segment)
 
-            for n in point['segment'].strip("[]").split(','):
-                self.segment.append(float(n))
-            self.segment = np.array(self.segment)
+                self.X.append(self.segment)
+                self.y.append(point['label'])
 
-            self.X.append(self.segment)
-            self.y.append(point['label'])
+            self.X = np.vstack(self.X)
 
-        self.X = np.vstack(self.X)
-
-        self.model = svm.SVC(kernel='rbf', probability=True).fit(self.X, self.y)
+            self.model = svm.SVC(kernel='rbf', probability=True).fit(self.X, self.y)

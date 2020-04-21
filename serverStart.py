@@ -2,116 +2,104 @@ import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-import activityDiscovery
-import activityRecognition
-import dbAPI
-import outlierDetection
-import solutions
+import baselineSystem
+from ActivityRecognitionComponent import activityRecognitionAPI
+from ActivityDiscoveryComponent import activityDiscoveryAPI
+import databaseAPI
 
 app = Flask(__name__)
-cluster = activityDiscovery.OnlineCluster(11)
-svm = activityRecognition.SVM()
-oneClassSVM = outlierDetection.OneSVM()
 CORS(app)
 
+useActivityDiscovery = True
+training = True
+modification = False
 
-@app.route("/solution", methods=["GET"])
-def solution():
-    if request.method == "GET":
-        print("SOLUTION")
-        solutions.get_solutions()
-
-        print("----------------")
-        unknown, known = oneClassSVM.activities()
-        print("Unknown datapoints: " + str(unknown))
-        print("Known datapoints: " + str(known))
-
-        return jsonify({'answer': "Solution!"})
+activityRecognition = activityRecognitionAPI.activityRecognition()
+activityDiscovery = activityDiscoveryAPI.activityDiscovery(modification)
+database = databaseAPI.database()
 
 
-@app.route("/discovery", methods=["POST"])
-def discovery():
+@app.route("/initializeServer", methods=["POST"])
+def initializeServer():
     if request.method == "POST":
-        allData = request.get_json(force=True)
-        label = allData['label']
-        training = allData['training']
-        useActivityDiscovery = allData['activityDiscovery']
-        data = pd.Series(allData['feature'])
-        time = data.iloc[-1]
-        data = data[:-1]
+        data = request.get_json(force=True)
+        global useActivityDiscovery
+        useActivityDiscovery = data['useActivityDiscovery']
+        return jsonify({'answer': 'Initialized Server!'})
 
-        # no activity discovery
-        if not useActivityDiscovery:
-            if training:
-                print("Writing segmented activity to database")
-                dbAPI.write(data.to_json(orient='records'), time, label)
-            if not training:
-                if svm.model is None:
-                    print("Training Classification Model!")
-                    svm.train()
-                # activity recognition
-                if svm.model is not None:
-                    answer_ar_l, answer_ar_s = svm.predict(data)
-                    pred_label = answer_ar_l[0]
-                    pred_score = answer_ar_s
-                    solutions.add_pred_activities(pred_label, label)
-                    print("----------------------")
-                    print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
-                    print("The Label is " + label)
-                else:
-                    return jsonify({'answer': "Nothing!"})
 
-        # with activity discovery
+@app.route("/analyseDataPoint", methods=["POST"])
+def analyseDataPoint():
+    if request.method == "POST":
+        data = request.get_json(force=True)
+        label = data['label']
+        dataPoint = pd.Series(data['feature'])
+        time = dataPoint.iloc[-1]
+        dataPoint = dataPoint[:-1]
+        answer = {'recognizedActivity': '-', 'discoveredActivity': '-'}
+
+        global training
+        if training != data['training']:
+            activityRecognition.trainModel(database)
+            training = False
+
+        global useActivityDiscovery
+        if useActivityDiscovery:
+            resultActivityDiscovery = activityDiscovery.discover(dataPoint, database, label, time)
+            if resultActivityDiscovery is not None:
+                answer['discoveredActivity'] = resultActivityDiscovery
+                if not training:
+                    activityRecognition.trainModel(database)
         else:
-            # outlier detection
-            if oneClassSVM.model is not None:
-                known = oneClassSVM.predict(data)
-                if known[0] == -1:
-                    # clustering
-                    print("DataPoint is unknown, doing Online Clustering!")
-                    answer_ad = cluster.cluster(data, time)
-                    if answer_ad is not None:
-                        print("Writing founded activity " + label
-                              + " to the database and update Outlier Detection model!")
-                        dbAPI.write(answer_ad.to_json(orient='records'), time, label)
-                        solutions.add_founded_activities(label)
-                        oneClassSVM.train()
-                        if not training:
-                            print("Update Classification model!")
-                            svm.train()
-                else:
-                    print("DataPoint is known, doing Online Clustering!")
-            else:
-                # clustering if no outlier detection model
-                print("No outlier detection model, doing Online Clustering!")
-                answer_ad = cluster.cluster(data, time)
-                if answer_ad is not None:
-                    print("Writing founded activity to database!")
-                    dbAPI.write(answer_ad.to_json(orient='records'), time, label)
-                    solutions.add_founded_activities(label)
-                    print("Training OutlierDetection model!")
-                    oneClassSVM.train()
-                    if not training:
-                        print("Update Classification model!")
-                        svm.train()
-            # activity recognition
-            if svm.model is None and not training:
-                print("Training Classification model for first time!")
-                svm.train()
-            if svm.model is not None:
-                print("Trying to do Classification!")
-                answer_ar_l, answer_ar_s = svm.predict(data)
-                pred_label = answer_ar_l[0]
-                pred_score = answer_ar_s
-                solutions.add_pred_activities(pred_label, label)
-                print("----------------------")
-                print("Predicted label is " + str(pred_label) + " with a score of " + str(pred_score))
-                print("The Label is " + label)
+            baselineSystem.writeToDatabase(dataPoint, database, label)
 
-        return jsonify({'answer': "Nothing!"})
+        if not training:
+            resultActivityRecognition = activityRecognition.predictDataPoint(dataPoint)
+            answer['recognizedActivity'] = resultActivityRecognition
+
+        # # dont use activity discovery
+        # if not useActivityDiscovery:
+        #     if training:
+        #         dbAPI.write(data.to_json(orient='records'), time, label)
+        #     if not training:
+        #         if svm.model is None:
+        #             svm.train()
+        #         # use activity recognition
+        #         if svm.model is not None:
+        #             answer['recognizedActivity'] = svm.predict(data)
+        # # use activity discovery
+        # else:
+        #     # use outlier detection
+        #     if oneClassSVM.model is not None:
+        #         known = oneClassSVM.predict(data)
+        #         if known[0] == -1:
+        #             # use clustering
+        #             answerAD = cluster.cluster(data, time)
+        #             if answerAD is not None:
+        #                 dbAPI.write(answerAD.to_json(orient='records'), time, label)
+        #                 answer['discoveredActivity'] = label
+        #                 oneClassSVM.train()
+        #                 if not training:
+        #                     svm.train()
+        #         else:
+        #             # activity recognition
+        #             if svm.model is None and not training:
+        #                 svm.train()
+        #             if svm.model is not None:
+        #                 answer['recognizedActivity'] = svm.predict(data)
+        #     else:
+        #         # clustering if no outlier detection model
+        #         answerAD = cluster.cluster(data, time)
+        #         if answerAD is not None:
+        #             dbAPI.write(answerAD.to_json(orient='records'), time, label)
+        #             answer['discoveredActivity'] = label
+        #             oneClassSVM.train()
+        #             if not training:
+        #                 svm.train()
+        return jsonify(answer)
 
 
 if __name__ == "__main__":
-    dbAPI.clear()
+    database.clear()
     print("Database is clear!")
     app.run()
