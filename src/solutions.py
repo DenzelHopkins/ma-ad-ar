@@ -56,11 +56,13 @@ predictedLabelArray = []
 correctLabelArray = []
 
 
+# Add newly founded activity
 def addFoundedActivities(label):
     global activities
     activities[label]["founded"] = activities[label]["founded"] + 1
 
 
+# Add newly predicted activity
 def addPredActivities(predictedLabel, label):
     global totalCount
     global activities
@@ -69,13 +71,12 @@ def addPredActivities(predictedLabel, label):
     else:
         activities[predictedLabel]["falsePositives"] += 1
         activities[label]["falseNegatives"] += 1
-
     totalCount += 1
-
     correctLabelArray.append(label)
     predictedLabelArray.append(predictedLabel)
 
 
+# Get the solutions
 def getSolutions():
     cm = confusion_matrix(correctLabelArray, predictedLabelArray, labels=labels)
     print("----------------------")
@@ -103,10 +104,10 @@ def getSolutions():
         totalFScore += fScore
         print("Precision for " + str(x) + " is " + str(round(precision, 2)) + ", the Recall is " + str(
             round(recall, 2)) + " and the F-Score is " + str(round(fScore, 2)))
-
     print("----------------------")
     print("The OverallFScore is: " + str(round((totalFScore / len(activities)), 2)))
     totalCorrect = 0
     for x, y in activities.items():
         totalCorrect += y["truePositives"]
     print("The OverallAccuracy is: " + str(round((totalCorrect / totalCount), 2)))
+    print("This is the totalCount of made predictions: " + str(totalCount))

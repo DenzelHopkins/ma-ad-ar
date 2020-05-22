@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn import svm
 
+
+# Class for the support-vector-machine
 class SVM(object):
     def __init__(self):
         self.labels = ["Meal_Preparation",
@@ -18,10 +20,8 @@ class SVM(object):
         self.X = []
         self.y = []
         self.segment = []
-
         self.X_res = []
         self.y_res = []
-
         self.model = None
 
     def predict(self, segment):
@@ -37,17 +37,12 @@ class SVM(object):
         if data.size > 1:
             self.X = []
             self.y = []
-
             for point in data:
                 self.segment = []
-
                 for n in point['segment'].strip("[]").split(','):
                     self.segment.append(float(n))
                 self.segment = np.array(self.segment)
-
                 self.X.append(self.segment)
                 self.y.append(point['label'])
-
             self.X = np.vstack(self.X)
-
             self.model = svm.SVC(kernel='rbf', probability=True).fit(self.X, self.y)

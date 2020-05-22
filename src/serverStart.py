@@ -1,7 +1,11 @@
+import os.path
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
 from src.activityRecognitionComponent import activityRecognitionAPI
 from src.activityDiscoveryComponent import activityDiscoveryAPI
 from src import baselineSystem, databaseAPI, solutions
@@ -15,6 +19,8 @@ system = 'baseline'
 activityRecognition = activityRecognitionAPI.activityRecognition()
 activityDiscovery = activityDiscoveryAPI.activityDiscovery()
 database = databaseAPI.database()
+knownDataPoints = 0
+unknownDataPoints = 0
 
 
 # Initialize server
@@ -48,11 +54,11 @@ def analyseDataPoint():
             training = False
 
         # When use the integrated system
-        if system == 'integrated':
+        if system == 'IntegratedSystem':
             resultActivityDiscovery = activityDiscovery.discover(dataPoint, database, label, time)
             if resultActivityDiscovery:
                 answer['discoveredActivity'] = resultActivityDiscovery
-                solutions.addPredActivities(resultActivityDiscovery, label)
+                solutions.addFoundedActivities(resultActivityDiscovery)
                 if not training:
                     activityRecognition.trainModel(database)
             if not training:
@@ -61,7 +67,7 @@ def analyseDataPoint():
                 solutions.addPredActivities(resultActivityRecognition, label)
 
         # When use the baseline system
-        if system == 'baseline':
+        if system == 'BaselineSystem':
             baselineSystem.writeToDatabase(dataPoint, database, label, time)
             if not training:
                 resultActivityRecognition = activityRecognition.predictDataPoint(dataPoint)
@@ -69,19 +75,17 @@ def analyseDataPoint():
                 solutions.addPredActivities(resultActivityRecognition, label)
 
         # When using the modified system
-        if system == 'modification':
-            resultActivityDiscovery, knownDataPoint = activityDiscovery.modifiedDiscover(dataPoint, database, label,
-                                                                                         time)
-            print(resultActivityDiscovery, knownDataPoint)
-
-            if resultActivityDiscovery is not None:
+        global knownDataPoints
+        if system == 'SystemModification':
+            resultActivityDiscovery = activityDiscovery.modifiedDiscover(dataPoint, database, label, time)
+            if resultActivityDiscovery is not None and resultActivityDiscovery is not 'knownActivity':
                 answer['discoveredActivity'] = resultActivityDiscovery
-                solutions.addPredActivities(resultActivityDiscovery, label)
+                solutions.addFoundedActivities(resultActivityDiscovery)
                 if not training:
                     activityRecognition.trainModel(database)
-            if not training and knownDataPoint is True:
+            if not training and resultActivityDiscovery is 'knownActivity':
+                knownDataPoints += 1
                 resultActivityRecognition = activityRecognition.predictDataPoint(dataPoint)
-                print(resultActivityRecognition)
                 answer['recognizedActivity'] = resultActivityRecognition
                 solutions.addPredActivities(resultActivityRecognition, label)
 
@@ -94,6 +98,7 @@ def analyseDataPoint():
 def solution():
     if request.method == "GET":
         solutions.getSolutions()
+        print("KnownDataPoints in TrainingsPhase: " + str(knownDataPoints))
         return jsonify({'answer': "Look in the python console for the solutions!"})
 
 

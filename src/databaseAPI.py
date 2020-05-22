@@ -4,6 +4,7 @@ from pymongo import MongoClient
 from sklearn.utils import shuffle
 
 
+# Class to read and write to the database
 class database(object):
 
     def __init__(self):
@@ -21,31 +22,29 @@ class database(object):
                        "Other"]
         self.client = MongoClient("mongodb://127.0.0.1:27017")
 
+    # Write dataPoint
     def write(self, data, time, label):
         point = {"segment": data,
                  "time": time,
                  "label": label}
         path = self.client.daten[label]
         path.insert_one(point)
-
         self.client.close()
 
+    # Clear the database
     def clear(self):
         for label in self.labels:
             path = self.client.daten[label]
             path.drop()
-
         self.client.close()
 
+    # Read from the database
     def get(self):
         data = []
         for label in self.labels:
             path = self.client.daten[label]
             for document in path.find({}).sort("time", pymongo.DESCENDING):
                 data.append(document)
-
         self.client.close()
-
         data = shuffle(data)
-
         return np.array(data)
